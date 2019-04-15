@@ -16,19 +16,21 @@ func Sin(freq, sampleRate float64, offset int, buf []float64) {
 	}
 }
 
-func NewSignal(gen SignalKind, freq, sampleRate float64) *Signal {
+func NewSignal(gen SignalKind, sampleRate float64, seq *Sequence) *Signal {
 	return &Signal{
 		gen:        gen,
-		freq:       freq,
+		seq:        seq,
 		sampleRate: sampleRate,
 	}
 }
 
 type Signal struct {
-	gen              SignalKind
-	freq, sampleRate float64
+	gen        SignalKind
+	seq        *Sequence
+	sampleRate float64
 }
 
 func (s *Signal) Get(offset int, buf []float64) {
-	s.gen(s.freq, s.sampleRate, offset, buf)
+	e := s.seq.Get(offset)
+	s.gen(e.Frequency(), s.sampleRate, offset, buf)
 }
