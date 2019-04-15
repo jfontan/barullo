@@ -45,13 +45,23 @@ func mPortaudio() {
 	}
 	defer stream.Stop()
 
+	o := 2
+	seq := barullo.NewSequence(44100*4,
+		[]barullo.Event{
+			{44100 * 0, "C", o, barullo.NotePress},
+			{44100 * 1, "D", o, barullo.NotePress},
+			{44100 * 2, "E", o, barullo.NotePress},
+			{44100 * 3, "F", o, barullo.NotePress},
+		},
+	)
+
 	env := barullo.NewEnvelope(2000, 2000, 0.8, 10000, sinBuf)
 
 	var freq float64
 	var sampleOffset int64
 	for {
-		freq = freqs[(sampleOffset/44100)%int64(len(freqs))]
-		freq = freq * 16 // change octave
+		e := seq.Get(int(sampleOffset))
+		freq = e.Frequency()
 
 		oscSin(sampleOffset, freq, sinBuf)
 		env.Get(int(sampleOffset), envBuf)
