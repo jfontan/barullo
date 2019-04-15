@@ -1,12 +1,13 @@
 package barullo
 
-func NewEnvelope(a, d int, s float64, r int, in []float64) *Envelope {
+func NewEnvelope(a, d int, s float64, r int, in []float64, seq *Sequence) *Envelope {
 	return &Envelope{
 		attack:  a,
 		decay:   d,
 		sustain: s,
 		release: r,
 		in:      in,
+		seq:     seq,
 	}
 }
 
@@ -29,29 +30,7 @@ type Envelope struct {
 
 	input *Node
 	in    []float64
-}
-
-type KeyStatus int
-
-const (
-	NoteOff KeyStatus = iota
-	NotePress
-	NotePressed
-	NoteRelease
-)
-
-func seqKey(offset int) KeyStatus {
-	pos := offset % 44100
-
-	if pos == 0 {
-		return NotePress
-	} else if pos < 20000 {
-		return NotePressed
-	} else if pos == 20000 {
-		return NoteRelease
-	}
-
-	return NoteOff
+	seq   *Sequence
 }
 
 func (e *Envelope) recalculate() {
@@ -67,7 +46,8 @@ func (e *Envelope) Get(offset int, buf []float64) error {
 	for i := range buf {
 		pos := offset + i
 
-		k := seqKey(pos)
+		event := e.seq.Get(pos)
+		k := event.Key
 		switch k {
 		case NotePress:
 			e.start = pos
@@ -95,7 +75,6 @@ func (e *Envelope) Get(offset int, buf []float64) error {
 				e.vol = 0.0
 			}
 		} else {
-			// println("error")
 			e.vol = 0.0
 		}
 
