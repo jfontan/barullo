@@ -5,6 +5,15 @@ import (
 	"strings"
 )
 
+type KeyStatus int
+
+const (
+	NoteOff KeyStatus = iota
+	NotePress
+	NotePressed
+	NoteRelease
+)
+
 var notes = map[string]float64{
 	"C":  16.35,
 	"C#": 17.32,
@@ -61,7 +70,7 @@ func NewSequence(length int, events []Event) *Sequence {
 func (s *Sequence) Get(offset int) Event {
 	offset = offset % s.length
 	now := s.events[s.pos]
-	prev := s.events[(len(s.events)+s.pos-1)%len(s.events)]
+	prev := s.events[(len(s.events)+s.pos-1)%len(s.events)] // warp around
 
 	if offset < now.Offset || (s.pos == 0 && offset > prev.Offset) {
 		return Event{
@@ -79,8 +88,6 @@ func (s *Sequence) Get(offset int) Event {
 		Key:    now.Key,
 	}
 
-	println(offset, now.Offset, s.length, event.Frequency())
-
 	s.note = now.Note
 	s.octave = now.Octave
 	s.key = NoteOff
@@ -89,7 +96,22 @@ func (s *Sequence) Get(offset int) Event {
 		s.key = NotePressed
 	}
 
+	// do not increment possition if we are in the event offest
+	if offset == now.Offset {
+		return event
+	}
 	s.pos = (s.pos + 1) % len(s.events)
+
+	switch event.Key {
+	case NoteOff:
+		println("NoteOff")
+	case NotePress:
+		println("NotePress")
+	case NotePressed:
+		println("NotePressed")
+	case NoteRelease:
+		println("NoteRelease")
+	}
 
 	return event
 }

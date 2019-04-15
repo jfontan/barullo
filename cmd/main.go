@@ -19,13 +19,6 @@ func main() {
 	mPortaudio()
 }
 
-var freqs = []float64{
-	16.35, // C
-	18.35, // D
-	20.60, // E
-	21.83, // F
-}
-
 func mPortaudio() {
 	portaudio.Initialize()
 	defer portaudio.Terminate()
@@ -49,13 +42,17 @@ func mPortaudio() {
 	seq := barullo.NewSequence(44100*4,
 		[]barullo.Event{
 			{44100 * 0, "C", o, barullo.NotePress},
+			{44100*0 + 22050, "C", o, barullo.NoteRelease},
 			{44100 * 1, "D", o, barullo.NotePress},
+			{44100*1 + 22050, "D", o, barullo.NoteRelease},
 			{44100 * 2, "E", o, barullo.NotePress},
+			{44100*2 + 22050, "E", o, barullo.NoteRelease},
 			{44100 * 3, "F", o, barullo.NotePress},
+			{44100*3 + 22050, "F", o, barullo.NoteRelease},
 		},
 	)
 
-	env := barullo.NewEnvelope(2000, 2000, 0.8, 10000, sinBuf)
+	env := barullo.NewEnvelope(2000, 2000, 0.8, 10000, sinBuf, seq)
 
 	var freq float64
 	var sampleOffset int64
