@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"math"
 
 	"barullo"
 
@@ -53,14 +52,14 @@ func mPortaudio() {
 	)
 
 	env := barullo.NewEnvelope(2000, 2000, 0.8, 10000, sinBuf, seq)
-
 	var freq float64
 	var sampleOffset int64
 	for {
 		e := seq.Get(int(sampleOffset))
 		freq = e.Frequency()
 
-		oscSin(sampleOffset, freq, sinBuf)
+		barullo.NewSignal(barullo.Sin, freq, 44100).Get(int(sampleOffset), sinBuf)
+
 		env.Get(int(sampleOffset), envBuf)
 		sampleOffset += int64(bufferSize)
 
@@ -69,16 +68,6 @@ func mPortaudio() {
 		if err := stream.Write(); err != nil {
 			log.Printf("error writing to stream : %v\n", err)
 		}
-	}
-}
-
-const twoPi = math.Pi * 2.0
-
-func oscSin(o int64, freq float64, buf []float64) {
-	var i int64
-	for i = 0; i < int64(len(buf)); i++ {
-		pos := float64(o + i)
-		buf[i] = math.Sin((twoPi / 44100.0) * freq * pos)
 	}
 }
 
