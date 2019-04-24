@@ -26,8 +26,7 @@ func mPortaudio() {
 	portaudio.Initialize()
 	defer portaudio.Terminate()
 
-	sinBuf := make([]float64, bufferSize)
-	envBuf := make([]float64, bufferSize)
+	buf := make([]float64, bufferSize)
 	out := make([]float32, bufferSize)
 
 	stream, err := portaudio.OpenDefaultStream(0, 1, sampleRate, bufferSize, &out)
@@ -55,15 +54,15 @@ func mPortaudio() {
 		},
 	)
 	sig := barullo.NewSignal(barullo.Sin, sampleRate, seq)
-	env := barullo.NewEnvelope(2000, 2000, 0.8, 10000, sinBuf, seq)
+	env := barullo.NewEnvelope(2000, 2000, 0.8, 10000, buf, seq)
 	var sampleOffset int64
 	for {
-		sig.Get(int(sampleOffset), sinBuf)
-		env.Get(int(sampleOffset), envBuf)
+		sig.Get(int(sampleOffset), buf)
+		env.Get(int(sampleOffset), buf)
 
 		sampleOffset += int64(bufferSize)
 
-		f64ToF32Copy(out, envBuf)
+		f64ToF32Copy(out, buf)
 
 		if err := stream.Write(); err != nil {
 			log.Printf("error writing to stream : %v\n", err)
