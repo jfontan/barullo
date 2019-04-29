@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"barullo"
 
@@ -40,19 +41,14 @@ func mPortaudio() {
 	}
 	defer stream.Stop()
 
-	o := 2
-	seq := barullo.NewSequence(sampleRate*4,
-		[]barullo.Event{
-			{sampleRate * 0, "C", o, barullo.NotePress},
-			{sampleRate*0 + 22050, "C", o, barullo.NoteRelease},
-			{sampleRate * 1, "D", o, barullo.NotePress},
-			{sampleRate*1 + 22050, "D", o, barullo.NoteRelease},
-			{sampleRate * 2, "E", o, barullo.NotePress},
-			{sampleRate*2 + 22050, "E", o, barullo.NoteRelease},
-			{sampleRate * 3, "F", o, barullo.NotePress},
-			{sampleRate*3 + 22050, "F", o, barullo.NoteRelease},
-		},
-	)
+	f, err := os.Open("./assets/mario.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	events := barullo.GetEventsFromMidi(2, sampleRate, f)
+
+	seq := barullo.NewSequence(events[len(events)-1].Offset+1, events)
 	sig := barullo.NewSignal(barullo.Sin, sampleRate, seq)
 	env := barullo.NewEnvelope(2000, 2000, 0.8, 10000, buf, seq)
 	var sampleOffset int64
