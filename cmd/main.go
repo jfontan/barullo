@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"math"
 
 	"barullo"
 
@@ -40,25 +41,33 @@ func mPortaudio() {
 	}
 	defer stream.Stop()
 
+	noteLength := sampleRate / 4
+
 	o := 2
-	seq := barullo.NewSequence(sampleRate*4,
+	seq := barullo.NewSequence(noteLength*4,
 		[]barullo.Event{
-			{sampleRate * 0, "C", o, barullo.NotePress},
-			{sampleRate*0 + 22050, "C", o, barullo.NoteRelease},
-			{sampleRate * 1, "D", o, barullo.NotePress},
-			{sampleRate*1 + 22050, "D", o, barullo.NoteRelease},
-			{sampleRate * 2, "E", o, barullo.NotePress},
-			{sampleRate*2 + 22050, "E", o, barullo.NoteRelease},
-			{sampleRate * 3, "F", o, barullo.NotePress},
-			{sampleRate*3 + 22050, "F", o, barullo.NoteRelease},
+			{noteLength * 0, "C", o, barullo.NotePress},
+			{noteLength*0 + noteLength/2, "C", o, barullo.NoteRelease},
+			{noteLength * 1, "D", o, barullo.NotePress},
+			{noteLength*1 + noteLength/2, "D", o, barullo.NoteRelease},
+			{noteLength * 2, "E", o, barullo.NotePress},
+			{noteLength*2 + noteLength/2, "E", o, barullo.NoteRelease},
+			{noteLength * 3, "F", o, barullo.NotePress},
+			{noteLength*3 + noteLength/2, "F", o, barullo.NoteRelease},
 		},
 	)
 	sig := barullo.NewSignal(barullo.Sin, sampleRate, seq)
 	env := barullo.NewEnvelope(2000, 2000, 0.8, 10000, buf, seq)
+	lp := barullo.NewLPFilter(500.8, 0.8)
 	var sampleOffset int64
 	for {
 		sig.Get(int(sampleOffset), buf)
 		env.Get(int(sampleOffset), buf)
+
+		freq := math.Sin(float64(sampleOffset)/44100.0)*500.0 + 500.0
+		res := math.Sin(float64(sampleOffset)/44100.0*4.0)*math.Sqrt2/4.0 + math.Sqrt2/4.0
+		lp.Set(freq, res)
+		lp.Get(int(sampleOffset), buf)
 
 		sampleOffset += int64(bufferSize)
 
