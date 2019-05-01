@@ -1,6 +1,8 @@
 package barullo
 
-import "math"
+import (
+	"math"
+)
 
 const twoPi = math.Pi * 2.0
 
@@ -33,4 +35,62 @@ type Signal struct {
 func (s *Signal) Get(offset int, buf []float64) {
 	e := s.seq.Get(offset)
 	s.gen(e.Frequency(), s.sampleRate, offset, buf)
+}
+
+type Pulse struct {
+	seq        *Sequence
+	sampleRate float64
+	duty       float64
+}
+
+func NewPulse(duty float64, sampleRate float64, seq *Sequence) *Pulse {
+	return &Pulse{
+		duty:       duty,
+		sampleRate: sampleRate,
+		seq:        seq,
+	}
+}
+
+func (p *Pulse) Get(offset int, buf []float64) {
+	for i := 0; i < len(buf); i++ {
+		e := p.seq.Get(offset + i)
+		cycle := p.sampleRate / e.Frequency()
+		pos := math.Mod(float64(offset+i), cycle)
+
+		if pos < p.duty*cycle {
+			buf[i] = -1.0
+		} else {
+			buf[i] = 1.0
+		}
+	}
+}
+
+type Triangle struct {
+	seq        *Sequence
+	sampleRate float64
+	duty       float64
+}
+
+func NewTriangle(duty float64, sampleRate float64, seq *Sequence) *Triangle {
+	return &Triangle{
+		duty:       duty,
+		sampleRate: sampleRate,
+		seq:        seq,
+	}
+}
+
+func (p *Triangle) Get(offset int, buf []float64) {
+	for i := 0; i < len(buf); i++ {
+		e := p.seq.Get(offset + i)
+		cycle := p.sampleRate / e.Frequency()
+		pos := math.Mod(float64(offset+i), cycle)
+
+		d := p.duty * cycle
+
+		if pos < d {
+			buf[i] = (pos/d)*2.0 - 1.0
+		} else {
+			buf[i] = (1.0-(pos-d)/(cycle-d))*2.0 - 1.0
+		}
+	}
 }

@@ -12,7 +12,7 @@ import (
 var (
 	channelNum      = 1
 	bitDepthInBytes = 2
-	bufferSize      = 64
+	bufferSize      = 64 * 10
 )
 
 const (
@@ -56,8 +56,10 @@ func mPortaudio() {
 			{noteLength*3 + noteLength/2, "F", o, barullo.NoteRelease},
 		},
 	)
-	sig := barullo.NewSignal(barullo.Sin, sampleRate, seq)
-	env := barullo.NewEnvelope(2000, 2000, 0.8, 10000, buf, seq)
+	// sig := barullo.NewSignal(barullo.Sin, sampleRate, seq)
+	// sig := barullo.NewPulse(0.5, sampleRate, seq)
+	sig := barullo.NewTriangle(0.0, sampleRate, seq)
+	env := barullo.NewEnvelope(2000/4, 2000/4, 0.8, 10000/4, buf, seq)
 	lp := barullo.NewLPFilter(500.8, 0.8)
 	var sampleOffset int64
 	for {
