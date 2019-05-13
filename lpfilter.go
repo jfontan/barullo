@@ -43,12 +43,15 @@ type LPFilter struct {
 
 	in0, in1, in2 float64
 	out1, out2    float64
+
+	input Node
 }
 
-func NewLPFilter(freq, res float64) *LPFilter {
+func NewLPFilter(input Node, freq, res float64) *LPFilter {
 	f := &LPFilter{
-		freq: freq,
-		res:  res,
+		freq:  freq,
+		res:   res,
+		input: input,
 	}
 
 	f.recalculate()
@@ -73,6 +76,8 @@ func (f *LPFilter) recalculate() {
 }
 
 func (f *LPFilter) Get(offset int, buf []float64) {
+	f.input.Get(offset, buf)
+
 	for i := 0; i < len(buf); i++ {
 		f.in2 = f.in1
 		f.in1 = f.in0

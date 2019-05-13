@@ -63,11 +63,13 @@ func mPortaudio() {
 
 	sig1 := barullo.NewPulse(0.5, sampleRate, seq1)
 	env1 := barullo.NewEnvelope(2000/4, 2000/4, 0.8, 10000/4, sig1, seq1)
+	lp1 := barullo.NewLPFilter(env1, 8000.3, 1.1)
 
 	sig2 := barullo.NewPulse(0.5, sampleRate, seq2)
 	env2 := barullo.NewEnvelope(2000/4, 2000/4, 0.8, 10000/4, sig2, seq1)
+	lp2 := barullo.NewLPFilter(env2, 8000.3, 1.1)
 
-	mixer := barullo.NewMixer([]barullo.Node{env1, env2}, []float64{1.0, 1.0})
+	mixer := barullo.NewMixer([]barullo.Node{lp1, lp2}, []float64{1.0, 1.0})
 
 	var sampleOffset int64
 	for {
