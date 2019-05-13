@@ -48,7 +48,7 @@ func mPortaudio() {
 
 	events := barullo.GetEventsFromMidi(2, sampleRate, f)
 
-	seq := barullo.NewSequence(events[len(events)-1].Offset+1, events)
+	seq := barullo.NewSequence(events[len(events)-1].Offset+1000, events)
 	sig := barullo.NewPulse(0.5, sampleRate, seq)
 	env := barullo.NewEnvelope(2000/4, 2000/4, 0.8, 10000/4, buf, seq)
 	lp := barullo.NewLPFilter(500.8, 0.8)
