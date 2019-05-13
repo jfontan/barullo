@@ -1,12 +1,12 @@
 package barullo
 
-func NewEnvelope(a, d int, s float64, r int, in []float64, seq *Sequence) *Envelope {
+func NewEnvelope(a, d int, s float64, r int, in Node, seq *Sequence) *Envelope {
 	return &Envelope{
 		attack:  a,
 		decay:   d,
 		sustain: s,
 		release: r,
-		in:      in,
+		input:   in,
 		seq:     seq,
 	}
 }
@@ -28,8 +28,8 @@ type Envelope struct {
 	releaseSpeed float64
 	vol          float64
 
-	input *Node
-	in    []float64
+	input Node
+	buf   []float64
 	seq   *Sequence
 }
 
@@ -42,7 +42,13 @@ func (e *Envelope) recalculate() {
 	e.releaseSpeed = e.sustain / float64(e.release)
 }
 
-func (e *Envelope) Get(offset int, buf []float64) error {
+func (e *Envelope) Get(offset int, buf []float64) {
+	if len(e.buf) != len(buf) {
+		e.buf = make([]float64, len(buf))
+	}
+
+	e.input.Get(offset, e.buf)
+
 	for i := range buf {
 		pos := offset + i
 
@@ -78,8 +84,6 @@ func (e *Envelope) Get(offset int, buf []float64) error {
 			e.vol = 0.0
 		}
 
-		buf[i] = e.in[i] * e.vol
+		buf[i] = e.buf[i] * e.vol
 	}
-
-	return nil
 }
