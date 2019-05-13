@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"math"
+	"os"
 
 	"barullo"
 
@@ -41,21 +42,14 @@ func mPortaudio() {
 	}
 	defer stream.Stop()
 
-	noteLength := sampleRate / 4
+	f, err := os.Open("./assets/mario.json")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	o := 2
-	seq := barullo.NewSequence(noteLength*4,
-		[]barullo.Event{
-			{noteLength * 0, "C", o, barullo.NotePress},
-			{noteLength*0 + noteLength/2, "C", o, barullo.NoteRelease},
-			{noteLength * 1, "D", o, barullo.NotePress},
-			{noteLength*1 + noteLength/2, "D", o, barullo.NoteRelease},
-			{noteLength * 2, "E", o, barullo.NotePress},
-			{noteLength*2 + noteLength/2, "E", o, barullo.NoteRelease},
-			{noteLength * 3, "F", o, barullo.NotePress},
-			{noteLength*3 + noteLength/2, "F", o, barullo.NoteRelease},
-		},
-	)
+	events := barullo.GetEventsFromMidi(2, sampleRate, f)
+
+	seq := barullo.NewSequence(events[len(events)-1].Offset+1, events)
 	sig := barullo.NewSignal(barullo.Sin, sampleRate, seq)
 	env := barullo.NewEnvelope(2000, 2000, 0.8, 10000, buf, seq)
 	lp := barullo.NewLPFilter(500.8, 0.8)
