@@ -46,7 +46,7 @@ func (e *Event) Frequency() float64 {
 		return freq
 	}
 
-	return math.Pow(freq, float64(e.Octave))
+	return freq * math.Pow(2, float64(e.Octave))
 }
 
 type Sequence struct {

@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"math"
 	"os"
 
 	"barullo"
@@ -13,7 +12,7 @@ import (
 var (
 	channelNum      = 1
 	bitDepthInBytes = 2
-	bufferSize      = 64
+	bufferSize      = 64 * 10
 )
 
 const (
@@ -49,18 +48,14 @@ func mPortaudio() {
 
 	events := barullo.GetEventsFromMidi(2, sampleRate, f)
 
-	seq := barullo.NewSequence(events[len(events)-1].Offset+1, events)
-	sig := barullo.NewSignal(barullo.Sin, sampleRate, seq)
-	env := barullo.NewEnvelope(2000, 2000, 0.8, 10000, buf, seq)
+	seq := barullo.NewSequence(events[len(events)-1].Offset+1000, events)
+	sig := barullo.NewPulse(0.5, sampleRate, seq)
+	env := barullo.NewEnvelope(2000/4, 2000/4, 0.8, 10000/4, buf, seq)
 	lp := barullo.NewLPFilter(500.8, 0.8)
 	var sampleOffset int64
 	for {
 		sig.Get(int(sampleOffset), buf)
 		env.Get(int(sampleOffset), buf)
-
-		freq := math.Sin(float64(sampleOffset)/44100.0)*500.0 + 500.0
-		res := math.Sin(float64(sampleOffset)/44100.0*4.0)*math.Sqrt2/4.0 + math.Sqrt2/4.0
-		lp.Set(freq, res)
 		lp.Get(int(sampleOffset), buf)
 
 		sampleOffset += int64(bufferSize)
