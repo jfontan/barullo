@@ -2,6 +2,7 @@ package barullo
 
 import (
 	"math"
+	"math/rand"
 )
 
 const twoPi = math.Pi * 2.0
@@ -9,12 +10,24 @@ const twoPi = math.Pi * 2.0
 type SignalKind func(freq, sampleRate float64, offset int, buf []float64)
 
 var _ SignalKind = Sin
+var _ SignalKind = Noise
 
 func Sin(freq, sampleRate float64, offset int, buf []float64) {
 	duration := len(buf)
 	for i := 0; i < duration; i++ {
 		pos := float64(offset + i)
 		buf[i] = math.Sin((twoPi / sampleRate) * freq * pos)
+	}
+}
+
+var r *rand.Rand = rand.New(rand.NewSource(99))
+
+func Noise(freq, sampleRate float64, offset int, buf []float64) {
+
+	duration := len(buf)
+	for i := 0; i < duration; i++ {
+		//pos := float64(offset + i)
+		buf[i] = r.Float64()
 	}
 }
 
